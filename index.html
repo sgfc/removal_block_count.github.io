@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>撤去台車管理</title>
+  <style>
+    body {
+      padding: 10px;
+      font-family: Arial, sans-serif;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td {
+      padding: 5px;
+      text-align: center;
+      border: 1px solid #ddd;
+    }
+    th {
+      white-space: nowrap;
+    }
+    td {
+      font-size: 1.75em;
+    }
+    .button-container {
+      display: flex;
+      justify-content: center;
+    }
+    .adjust-btn {
+      font-size: 1.25rem;
+      padding: 3px 5px;
+      margin: 2px;
+      cursor: pointer;
+    }
+    @media (min-width: 768px) {
+      .adjust-btn {
+        font-size: 2rem;
+        padding: 10px 15px;
+      }
+    }
+    .red-text {
+      color: red;
+    }
+    .priority-1 {
+      border-left: 8px solid #FF0000;  /* 赤 */
+    }
+    .priority-2 {
+      border-left: 8px solid #FFFF00;  /* 黄 */
+    }
+    .priority-3 {
+      border-left: 8px solid #0000FF;  /* 青 */
+    }
+    th:first-child {
+      border-left: 8px solid #000;
+    }
+    .block-a {
+      background-color: #e2e3e5;
+    }
+    .block-b {
+      background-color: #cce5ff;
+    }
+    .block-c {
+      background-color: #ffddcc;
+    }
+    .block-d {
+      background-color: #d6c8ff;
+    }
+    .block-e {
+      background-color: #d4edda;
+    }
+    .block-s {
+      background-color: #fff3cd;
+    }
+    .block-p {
+      background-color: #f8d7da;
+    }
+  </style>
+  <script>
+    let seatData = [];
+    let refreshInterval = null;
+
+    // 初期データをセットする
+    function initializeSeatData() {
+  const data = [
+    [1, "S-8", 132, 6, 5, 1],
+    [2, "S-7", 132, 6, 0, 1],
+    [3, "S-6", 132, 6, 0, 1],
+    [4, "S-5", 132, 6, 0, 1],
+    [5, "E-6", 154, 7, 0, 1],
+    [6, "E-5", 154, 7, 0, 1],
+    [7, "P-6", 21, 1, 1, 1],
+    [8, "P-5", 21, 1, 0, 1],
+    [9, "P-4", 21, 1, 0, 1],
+    [10, "B-3", 126, 5, 0, 1],
+    [11, "B-2", 126, 5, 0, 1],
+    [12, "B-1", 126, 5, 0, 1],
+    [13, "A-4", 116, 5, 0, 1],
+    [14, "A-3", 108, 5, 0, 1],
+    [15, "A-2", 126, 5, 0, 1],
+    [16, "A-1", 126, 5, 0, 1],
+    [17, "P-3", 21, 1, 0, 2],
+    [18, "P-1", 21, 1, 0, 2],
+    [19, "E-3", 144, 6, 0, 2],
+    [20, "E-2", 154, 7, 0, 2],
+    [21, "B-8", 126, 5, 0, 2],
+    [22, "B-7", 126, 5, 0, 2],
+    [23, "E-4", 154, 7, 0, 2],
+    [24, "D-6", 154, 7, 0, 2],
+    [25, "E-1", 154, 7, 0, 2],
+    [26, "D-3", 154, 7, 0, 2],
+    [27, "B-6", 126, 5, 0, 2],
+    [28, "B-5", 126, 5, 0, 2],
+    [29, "D-5", 154, 7, 0, 2],
+    [30, "D-4", 154, 7, 0, 2],
+    [31, "D-2", 150, 6, 0, 2],
+    [32, "D-1", 154, 7, 0, 2],
+    [33, "B-4", 126, 5, 0, 3],
+    [34, "A-8", 126, 5, 0, 3],
+    [35, "C-6", 154, 7, 0, 3],
+    [36, "C-5", 154, 7, 0, 3],
+    [37, "C-3", 154, 7, 0, 3],
+    [38, "C-2", 154, 7, 0, 3],
+    [39, "A-7", 126, 5, 0, 3],
+    [40, "A-6", 126, 5, 0, 3],
+    [41, "C-4", 154, 7, 0, 3],
+    [42, "S-4", 132, 6, 0, 3],
+    [43, "C-1", 144, 6, 0, 3],
+    [44, "S-2", 132, 6, 0, 3],
+    [45, "A-5", 126, 5, 0, 3],
+    [46, "P-2", 21, 1, 0, 3],
+    [47, "S-3", 96, 4, 0, 3],
+    [48, "S-1", 132, 6, 0, 3]
+  ];
+  localStorage.setItem('seatData', JSON.stringify(data));
+  loadSeatData();
+}
+
+    // ローカルストレージからデータを取得してテーブルを更新する関数
+    function loadSeatData() {
+      const storedData = JSON.parse(localStorage.getItem('seatData'));
+      if (storedData) {
+        seatData = storedData.map(row => ({
+          index: row[0],
+          block: row[1],
+          seats: row[2],
+          totalCarts: row[3],
+          currentCarts: row[4],
+          priority: row[5]
+        }));
+      } else {
+        initializeSeatData(); // 初期データがない場合はセットする
+      }
+      renderTable();
+    }
+
+    // テーブルを描画する関数
+    function renderTable() {
+      var table = document.getElementById("seatTable");
+      table.innerHTML = "";
+      seatData.forEach(function(row, rowIndex) {
+        var newRow = table.insertRow();
+        newRow.classList.add(`priority-${row.priority}`);
+        var firstChar = row.block.charAt(0).toLowerCase();
+        newRow.className += ` block-${firstChar}`;
+
+        var blockCell = newRow.insertCell(0);
+        var seatsCell = newRow.insertCell(1);
+        var totalCartsCell = newRow.insertCell(2);
+        var currentCartsCell = newRow.insertCell(3);
+        var adjustCell = newRow.insertCell(4);
+
+        blockCell.textContent = row.block;
+        seatsCell.textContent = row.seats;
+        totalCartsCell.textContent = row.totalCarts;
+        
+        currentCartsCell.textContent = row.currentCarts;
+        if (row.currentCarts >= row.totalCarts) {
+          currentCartsCell.classList.add('red-text');
+        } else {
+          currentCartsCell.classList.remove('red-text');
+        }
+
+        adjustCell.innerHTML = `
+          <div class="button-container">
+            <button class="adjust-btn" id="dec-btn-${rowIndex}" onclick="adjustCart(${row.index}, ${row.currentCarts - 1}, ${rowIndex})">−</button>
+            <button class="adjust-btn" id="inc-btn-${rowIndex}" onclick="adjustCart(${row.index}, ${row.currentCarts + 1}, ${rowIndex})">+</button>
+          </div>
+        `;
+      });
+    }
+
+    // 台車数を調整する関数
+    function adjustCart(index, newCount, rowIndex) {
+      if (newCount < 0) {
+        newCount = 0;
+      }
+
+      seatData[rowIndex].currentCarts = newCount;
+      localStorage.setItem('seatData', JSON.stringify(seatData)); // ローカルストレージに保存
+      renderTable();
+    }
+
+    // 初期化処理
+    window.onload = function() {
+      loadSeatData(); // ページ読み込み時にデータを読み込む
+    };
+  </script>
+</head>
+<body>
+  <h1>撤去台車管理</h1>
+  <table>
+    <thead>
+      <tr>
+        <th>Block</th>
+        <th>座席<br>数</th>
+        <th>台車<br>総数</th>
+        <th>現在<br>台数</th>
+        <th>台車<br>調整</th>
+      </tr>
+    </thead>
+    <tbody id="seatTable">
+      <!-- データはここに挿入されます -->
+    </tbody>
+  </table>
+</body>
+</html>
