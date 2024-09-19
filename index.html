@@ -132,13 +132,13 @@
     [47, "S-3", 96, 4, 0, 3],
     [48, "S-1", 132, 6, 0, 3]
   ];
-  localStorage.setItem('seatData', JSON.stringify(data));
+  localStorage.setItem('removalSeatData', JSON.stringify(data));
   loadSeatData();
 }
 
     // ローカルストレージからデータを取得してテーブルを更新する関数
     function loadSeatData() {
-      const storedData = JSON.parse(localStorage.getItem('seatData'));
+      const storedData = JSON.parse(localStorage.getItem('removalSeatData'));
       if (storedData) {
         seatData = storedData.map(row => ({
           index: row[0],
@@ -197,7 +197,7 @@
       }
 
       seatData[rowIndex].currentCarts = newCount;
-      localStorage.setItem('seatData', JSON.stringify(seatData)); // ローカルストレージに保存
+      localStorage.setItem('removalSeatData', JSON.stringify(seatData)); // ローカルストレージに保存
       renderTable();
     }
 
